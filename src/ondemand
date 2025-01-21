@@ -1,0 +1,71 @@
+import axios from "axios";
+
+// Function to create a chat session
+async function createChatSession(apikey, externalUserId) {
+  try {
+    const response = await axios.post(
+      "https://api.on-demand.io/chat/v1/sessions",
+      {
+        pluginIds: [],
+        externalUserId: externalUserId,
+      },
+      {
+        headers: { apikey: apikey },
+      }
+    );
+
+    if (response.status === 201) {
+      // Extract session ID from the response
+      const sessionId = response.data.data.id;
+      return sessionId;
+    }
+  } catch (error) {
+    console.error("Error creating chat session:", error);
+  }
+}
+
+// Function to submit a query
+async function submitQuery(apikey, sessionId, query) {
+  try {
+    const response = await axios.post(
+      `https://api.on-demand.io/chat/v1/sessions/${sessionId}/query`,
+      {
+        endpointId: "predefined-openai-gpt4o",
+        query: query,
+        pluginIds: [
+          "plugin-1712327325",
+          "plugin-1713962163",
+          "plugin-1717443236",
+          "plugin-1717442737",
+          "plugin-1717438583",
+        ],
+        responseMode: "sync",
+      },
+      {
+        headers: { apikey: apikey },
+      }
+    );
+
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (error) {
+    console.error("Error submitting query:", error);
+  }
+}
+
+// Sample usage
+async function initializeChat(apikey, externalUserId, query) {
+  const sessionId = await createChatSession(apikey, externalUserId);
+  if (sessionId) {
+    const queryResponse = await submitQuery(apikey, sessionId, query);
+    console.log("Query Response:", queryResponse);
+  }
+}
+
+// Replace with actual API key and external user ID
+initializeChat(
+  "VMbjA485zg0O4lDAk8BXit5fnyzJyDik",
+  "<replace_external_user_id>",
+  "Put your query here"
+);
